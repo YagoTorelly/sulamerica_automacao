@@ -1,35 +1,35 @@
 FROM python:3.10-slim
 
-# Instalar dependências básicas e Chrome + ChromeDriver
+# Instalar dependências do sistema
 RUN apt-get update && apt-get install -y \
-    wget unzip curl gnupg \
-    chromium-driver chromium && \
-    apt-get clean
+    wget \
+    curl \
+    unzip \
+    gnupg \
+    chromium \
+    chromium-driver \
+    cron \
+    && apt-get clean
 
-# Variáveis de ambiente do Chrome headless
-ENV CHROME_BIN=/usr/bin/chromium \
-    CHROMEDRIVER=/usr/bin/chromedriver
+# Variáveis de ambiente do Chrome
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 
-# Diretório de trabalho
+# Criar diretório de trabalho
 WORKDIR /app
 
 # Copiar arquivos
 COPY . /app
 
 # Instalar dependências Python
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip && pip install -r requirements.txt
 
-# Instalar cron
-RUN apt-get update && apt-get install -y cron
+# Adicionar crontab
+COPY scheduler/crontab /etc/cron.d/bot-cron
+RUN chmod 0644 /etc/cron.d/bot-cron && crontab /etc/cron.d/bot-cron
 
-# Copiar crontab e registrar
-COPY scheduler/crontab /etc/cron.d/sula-cron
-RUN chmod 0644 /etc/cron.d/sula-cron && crontab /etc/cron.d/sula-cron
-
-# Criar log
+# Criar log para o cron
 RUN touch /var/log/cron.log
 
-# Comando de entrada
+# Comando padrão do container
 CMD cron && tail -f /var/log/cron.log
-
-
