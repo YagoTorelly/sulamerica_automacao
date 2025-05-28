@@ -31,11 +31,3 @@ Este projeto realiza automaticamente a extração de extratos de comissões do p
 - Conta ativa no portal SulAmérica Corretor
 
 ---
-
-## 🔐 Variáveis de Ambiente
-
-Crie um arquivo `.env` na raiz do projeto com:
-
-```env
-SULA_EMAIL=seu_email_de_login
-SULA_SENHA=sua_senha_de_login
