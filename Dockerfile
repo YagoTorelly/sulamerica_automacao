@@ -33,4 +33,3 @@ RUN touch /var/log/cron.log
 CMD cron && tail -f /var/log/cron.log
 
 
-# rodar 'docker build -t sulamerica_bot .'

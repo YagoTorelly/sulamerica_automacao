@@ -1,0 +1,7 @@
+# Ignorar variáveis sensíveis e arquivos temporários
+.env
+*.xlsx
+__pycache__/
+*.pyc
+*.log
+*.png
