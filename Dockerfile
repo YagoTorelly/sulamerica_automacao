@@ -33,3 +33,6 @@ RUN touch /var/log/cron.log
 
 # Comando padrão do container
 CMD cron && tail -f /var/log/cron.log
+
+
+

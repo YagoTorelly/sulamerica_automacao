@@ -30,5 +30,3 @@ Este projeto realiza automaticamente a extração de extratos de comissões do p
 - Docker (caso vá executar em contêiner)
 - Conta ativa no portal SulAmérica Corretor
 
----
-
