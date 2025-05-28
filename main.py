@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
+import dropbox
 
 def iniciar_extracao():
     hoje = datetime.today()
@@ -17,6 +18,7 @@ def iniciar_extracao():
     load_dotenv()
     LOGIN = os.getenv("SULA_EMAIL")
     SENHA = os.getenv("SULA_SENHA")
+    DROPBOX_TOKEN = os.getenv("DROPBOX_TOKEN")
 
     options = Options()
     options.add_experimental_option("prefs", {
@@ -121,9 +123,20 @@ def iniciar_extracao():
         driver.quit()
 
         if dados_extraidos:
+            nome_arquivo = f"extrato_sulamerica_{hoje.strftime('%Y-%m-%d')}.xlsx"
             df = pd.DataFrame(dados_extraidos)
-            df.to_excel("extrato_sulamerica.xlsx", index=False)
+            df.to_excel(nome_arquivo, index=False)
             print("✅ Extração concluída com sucesso.")
+
+            # Enviar para Dropbox
+            try:
+                dbx = dropbox.Dropbox(DROPBOX_TOKEN)
+                with open(nome_arquivo, "rb") as f:
+                    dbx.files_upload(f.read(), f"/{nome_arquivo}", mode=dropbox.files.WriteMode("overwrite"))
+                print("☁️ Arquivo enviado para o Dropbox com sucesso!")
+            except Exception as erro_dropbox:
+                print("⚠️ Erro ao enviar para o Dropbox:", erro_dropbox)
+
         else:
             print("⚠️ Nenhum dado encontrado para o período informado.")
 
