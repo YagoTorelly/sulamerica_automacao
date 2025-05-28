@@ -1,0 +1,4 @@
+# Roda o script todos os dias às 21:00
+0 21 * * * cd /app && /usr/local/bin/python main.py >> /var/log/cron.log 2>&1
+
+
