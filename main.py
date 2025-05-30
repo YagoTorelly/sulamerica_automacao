@@ -8,7 +8,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
+<<<<<<< HEAD
 from selenium.common.exceptions import TimeoutException
+=======
+import dropbox
+>>>>>>> e5d771c222e2245b3485b7508a99e3e5d3019a2a
 
 def iniciar_extracao():
     hoje = datetime.today()
@@ -18,6 +22,7 @@ def iniciar_extracao():
     load_dotenv()
     LOGIN = os.getenv("SULA_EMAIL")
     SENHA = os.getenv("SULA_SENHA")
+    DROPBOX_TOKEN = os.getenv("DROPBOX_TOKEN")
 
     options = Options()
     options.add_experimental_option("prefs", {
@@ -121,6 +126,7 @@ def iniciar_extracao():
 
         if dados_extraidos:
             nome_arquivo = f"extrato_sulamerica_{hoje.strftime('%Y-%m-%d')}.xlsx"
+<<<<<<< HEAD
             output_dir = r"C:\Users\Yago\Dropbox\Sala da família\Planilha_Financeiro_Cod"
             os.makedirs(output_dir, exist_ok=True)
             caminho_local = os.path.join(output_dir, nome_arquivo)
@@ -132,6 +138,21 @@ def iniciar_extracao():
 
             df.to_excel(caminho_local, index=False)
             print(f"✅ Extração concluída com sucesso! Arquivo salvo em:\n{caminho_local}")
+=======
+            df = pd.DataFrame(dados_extraidos)
+            df.to_excel(nome_arquivo, index=False)
+            print("✅ Extração concluída com sucesso.")
+
+            # Enviar para Dropbox
+            try:
+                dbx = dropbox.Dropbox(DROPBOX_TOKEN)
+                with open(nome_arquivo, "rb") as f:
+                    dbx.files_upload(f.read(), f"/{nome_arquivo}", mode=dropbox.files.WriteMode("overwrite"))
+                print("☁️ Arquivo enviado para o Dropbox com sucesso!")
+            except Exception as erro_dropbox:
+                print("⚠️ Erro ao enviar para o Dropbox:", erro_dropbox)
+
+>>>>>>> e5d771c222e2245b3485b7508a99e3e5d3019a2a
         else:
             print("⚠️ Nenhum dado encontrado para o período informado.")
 
