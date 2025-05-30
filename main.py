@@ -8,6 +8,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait, Select
 from selenium.webdriver.support import expected_conditions as EC
 import pandas as pd
+from selenium.common.exceptions import TimeoutException
 
 def iniciar_extracao():
     hoje = datetime.today()
@@ -23,10 +24,11 @@ def iniciar_extracao():
         "download.prompt_for_download": False,
         "plugins.always_open_pdf_externally": True
     })
-    options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--window-size=1920,1080")
+    # 🚫 Modo headless removido para depuração
+    # options.add_argument("--headless")
 
     driver = webdriver.Chrome(options=options)
     wait = WebDriverWait(driver, 30)
@@ -38,7 +40,12 @@ def iniciar_extracao():
         wait.until(EC.presence_of_element_located((By.NAME, "password"))).send_keys(SENHA)
         driver.find_element(By.CSS_SELECTOR, 'input[type="submit"].g-recaptcha').click()
         print("🔐 Login realizado com sucesso.")
-        wait.until(EC.url_contains("/area-logada"))
+
+        try:
+            wait.until(EC.url_contains("/area-logada"))
+        except TimeoutException:
+            print("⚠️ Aviso: redirecionamento para /area-logada não aconteceu.")
+            print("🔎 URL atual:", driver.current_url)
 
         driver.get("https://corretor.sulamericaseguros.com.br/area-logada/#/comissoes")
 
@@ -98,14 +105,6 @@ def iniciar_extracao():
                                     continue
 
                             if info:
-                                percentual = info.get("Remuneração", "").strip().replace("%", "")
-                                if percentual == "100":
-                                    info["Tipo de Remuneração"] = "Agenciamento"
-                                elif percentual == "2":
-                                    info["Tipo de Remuneração"] = "Vitalício"
-                                else:
-                                    info["Tipo de Remuneração"] = "Outro"
-
                                 info["Campanha"] = nome_campanha
                                 info["Data Selecionada"] = texto
                                 dados_extraidos.append(info)
@@ -121,9 +120,18 @@ def iniciar_extracao():
         driver.quit()
 
         if dados_extraidos:
+            nome_arquivo = f"extrato_sulamerica_{hoje.strftime('%Y-%m-%d')}.xlsx"
+            output_dir = r"C:\Users\Yago\Dropbox\Sala da família\Planilha_Financeiro_Cod"
+            os.makedirs(output_dir, exist_ok=True)
+            caminho_local = os.path.join(output_dir, nome_arquivo)
+
             df = pd.DataFrame(dados_extraidos)
-            df.to_excel("extrato_sulamerica.xlsx", index=False)
-            print("✅ Extração concluída com sucesso.")
+            df["Tipo de Produto"] = df["Remuneração"].apply(
+                lambda x: "Agenciamento" if x.strip().replace("%", "") == "100" else "Vitalício"
+            )
+
+            df.to_excel(caminho_local, index=False)
+            print(f"✅ Extração concluída com sucesso! Arquivo salvo em:\n{caminho_local}")
         else:
             print("⚠️ Nenhum dado encontrado para o período informado.")
 
